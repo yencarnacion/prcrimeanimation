@@ -18,15 +18,13 @@ To get this project working, do the following:
 
 2. Install Bower
 
->$ sudo npm install -g bower
-
+    >$ sudo npm install -g bower
 3. Get the Javascript dependencies
 
->$ bower install
-
+    >$ bower install
 4. Deploy to a server and view index.html on your browser. If you have python installed you can do: 
 
->$ python -m SimpleHTTPServer
+    >$ python -m SimpleHTTPServer
 
 Demo
 =====

@@ -15,11 +15,17 @@ How to run
 To get this project working, do the following:
 
 1. Install NodeJS and npm from [http://nodejs.org/](http://nodejs.org/)
+
 2. Install Bower
+
 >$ sudo npm install -g bower
+
 3. Get the Javascript dependencies
+
 >$ bower install
+
 4. Deploy to a server and view index.html on your browser. If you have python installed you can do: 
+
 >$ python -m SimpleHTTPServer
 
 Demo

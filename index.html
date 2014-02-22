@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<!-- Inspired by https://github.com/chriswhong/phillyBikeThefts -->
+	<title>PR Crime Data Sample (2013)</title>
+
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.css" />
+	<script src="http://mbostock.github.com/d3/d3.v2.js?2.8.1"></script>
+	<script src="http://lully.snv.jussieu.fr/gbif/mapping/jqueries/leaflet-src.js"></script>
+	<style type="text/css">
+	html, body{
+		height:100%;
+		margin:0;
+	}
+	#header{
+		position: absolute;
+		top: 10px;
+		left: 10px;
+		font-family: sans-serif;
+		font-size: 35px;
+		padding: 10px;
+		background: #444;
+		width: 612px;
+		color: #ffffff;
+		text-align: left;
+		padding-right: 40px;
+		border: 2px solid #ddd;
+	}
+	#timestamp{
+		position: absolute;
+		top: 10px;
+		right: 10px;
+		font-family: sans-serif;
+		font-size: 35px;
+		padding: 10px;
+		background: #444;
+		width: 291px;
+		color: #ffffff;
+		text-align: right;
+		padding-right: 40px;
+		border: 2px solid #ddd;
+	}
+
+	#footer{
+		position: absolute;
+		bottom: 10px;
+		left: 10px;
+		font-family: sans-serif;
+		font-size: 13px;
+		padding: 10px;
+		background: #444;
+		width: auto;
+		color: #ffffff;
+		text-align: left;
+		margin-right:10px;
+		border: 2px solid #ddd;
+	}
+
+	#key{
+		left: 10px;
+		font-family: sans-serif;
+		font-size: 18px;
+		padding: 10px;
+		background: #444;
+		color: #ffffff;
+		text-align: left;
+		border: 2px solid #ddd;
+		position: absolute;
+		top: 87px;
+		height: 100px;
+		width: 117px;
+	}
+	
+	a,a:hover, a:visited{
+		color: #38F7FF;
+	}
+
+	p{
+		display: inline-block;
+		margin-top: 1px;
+		position: relative;
+		top: -2px;
+		margin-left: 8px;
+	}
+
+	circle
+	{
+		fill-opacity: 0.6;
+	}
+
+	</style>
+</head>
+<body>
+
+	<div id="map" style="width: 100%; height: 100%;position:relative"></div>
+	<div id = "timestamp"></div>
+	<div id = "header">PR Crime Data Animation</div>
+	<div id = "key">
+		<!-- 
+
+		 "aqua", "black", "blue", "fuchsia", "gray", "green", "lime", "maroon", "navy", "olive", "purple", "red", "silver", "teal", "white", and "yellow".
+		-->
+		<svg xmlns="http://www.w3.org/2000/svg" version="1.1" style= "width:16px; height:16px">
+			<circle cx="8" cy="8" r="8" fill="red"/>
+		</svg><p>Type 1</p>
+		<svg xmlns="http://www.w3.org/2000/svg" version="1.1" style= "width:16px; height:16px">
+			<circle cx="8" cy="8" r="8" fill="yellow"/>
+		</svg><p>Type 2</p>
+		<svg xmlns="http://www.w3.org/2000/svg" version="1.1" style= "width:16px; height:16px">
+			<circle cx="8" cy="8" r="8" fill="green"/>
+		</svg><p>Type 3</p>
+		<svg xmlns="http://www.w3.org/2000/svg" version="1.1" style= "width:16px; height:16px">
+			<circle cx="8" cy="8" r="8" fill="purple"/>
+		</svg><p>Type 4</p>
+		<svg xmlns="http://www.w3.org/2000/svg" version="1.1" style= "width:16px; height:16px">
+			<circle cx="8" cy="8" r="8" fill="blue"/>
+		</svg><p>Type 5</p>
+		<svg xmlns="http://www.w3.org/2000/svg" version="1.1" style= "width:16px; height:16px">
+			<circle cx="8" cy="8" r="8" fill="silver"/>
+		</svg><p>Type 6</p>
+		<svg xmlns="http://www.w3.org/2000/svg" version="1.1" style= "width:16px; height:16px">
+			<circle cx="8" cy="8" r="8" fill="maroon"/>
+		</svg><p>Type 7</p>
+		<svg xmlns="http://www.w3.org/2000/svg" version="1.1" style= "width:16px; height:16px">
+			<circle cx="8" cy="8" r="8" fill="teal"/>
+		</svg><p>Type 8</p>
+	</div>
+	<div id = "footer">By <a href = "https://twitter.com/yencarnacion">@yencarnacion</a> | Made at <a href = "http://webninjapr.com/">WebNinja Corp.</a> | Data provided by the Governmnent of Puerto Rico</a> | Support Open Data! | Made with <a href = "http://bl.ocks.org/ZJONSSON/3087431">D3 and Leaflet</a> | TODO: Add UI elements, add graph to show seasonal patterns | <a href = "https://github.com/yencarnacion/prcrimeanimation">Code on Github</a></div>
+	<script type="text/javascript">
+	//Attribution: http://bl.ocks.org/ZJONSSON/3087431
+	//Made at # PR hackathon
+	
+	//var cloudmadeUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+	var cloudmadeUrl = 'http://{s}.tile.cloudmade.com/7aefb69ada94483589114c834f19c523/108659/256/{z}/{x}/{y}.png',
+	cloudmadeAttribution = 'Map data &copy; 2014 OpenStreetMap contributors, Imagery &copy; 2014 CloudMade',
+	cloudmade = new L.TileLayer(cloudmadeUrl, {maxZoom: 18, attribution: cloudmadeAttribution});
+
+	var map = new L.Map('map', {
+		center: new L.LatLng(18.2,-66.4,6),
+		zoom: 9, 
+		layers: [cloudmade]
+	});
+
+	/* Initialize the SVG layer */
+	map._initPathRoot()    
+
+	/* We simply pick up the SVG from the map object */
+	var svg = d3.select("#map").select("svg"),
+	g = svg.append("g");
+
+
+	
+	d3.csv("2013-pr-incidencia-sample.csv", function(collection) {
+		/* Add a LatLng object and a UnixDate object to each item in the dataset */
+		collection.forEach(function(d) {
+			d.LatLng = new L.LatLng(d.latitude,d.longitude)
+			d.UnixDate = new Date(d.date).getTime() / 1000
+		})
+
+		/* Sort by UnixDate */
+		collection.sort(function(a,b) {return a.UnixDate-b.UnixDate;});
+
+		var time = new Date('1/1/2013 0:00:00').getTime()/ 1000;
+
+		var previousTime;
+
+		console.log("Collection Size: "+ collection.length);
+		//console.log("Collection:");
+		//console.log(collection);
+
+		var filtered = collection.filter(function(d){
+			return (d.UnixDate >= time);
+		});
+
+		console.log("Filtered Size: "+filtered.length)
+
+		function update() {
+
+			showDateTime(time);
+
+			nextTime = time + 86400;
+
+			//console.log(time);
+			grab = collection.filter(function(d){
+				return (d.UnixDate >= time)&&(d.UnixDate < nextTime);	
+			});
+		 	//filtered = filtered.concat(grab);
+		 	filtered = grab;
+
+		 	//console.log(filtered);
+		 	var feature = g.selectAll("circle").data(filtered,function(d){
+		 		return d.Key;
+		 	});
+		 	feature.enter().append("circle").attr("fill",function(d){
+		 		if(d.incident_type==1) return "red";
+		 		if(d.incident_type==2) return "yellow";
+		 		if(d.incident_type==3) return "green";
+		 		if(d.incident_type==4) return "purple";
+		 		if(d.incident_type==5) return "blue";
+		 		if(d.incident_type==6) return "silver";
+		 		if(d.incident_type==7) return "maroon";
+		 		if(d.incident_type==8) return "teal";
+		 	}).attr("r",0).transition().duration(100).attr("r",function(d){
+		 		return map.getZoom();
+		 	});
+
+		 	feature.exit().transition().duration(250).attr("r",0).remove();
+
+		 	feature.attr("cx",function(d) { return map.latLngToLayerPoint(d.LatLng).x});
+		 	feature.attr("cy",function(d) { return map.latLngToLayerPoint(d.LatLng).y});
+
+		 	time = time + 86400;
+		 	setTimeout(update,100);
+		 }
+
+		 function showDateTime(unixtime){
+		 	var newDate = new Date();
+		 	newDate.setTime(unixtime*1000);
+		 	dateString = newDate.toString();
+		 	dateString = dateString.slice(0,16);
+		 	document.getElementById("timestamp").innerHTML = dateString;
+		 }
+
+		
+		 update();
+		})			 
+</script>
+</body>
+</html>

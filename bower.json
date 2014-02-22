@@ -1,0 +1,7 @@
+{
+  "name": "leaflet-d3-directive",
+  "dependencies": {
+    "leaflet-dist": "0.6.4",
+    "d3": "2.8.1"
+  }
+}
